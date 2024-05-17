@@ -41,7 +41,7 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
     }
   } else {
     if (type == 'broadleaf'){
-      tariff <- fc_broad_tarifff(tarifflokupcode,height,dbh)
+      tariff <- fc_broad_tariff(tarifflokupcode,height,dbh)
       mercvol <- fc_merchtreevol(tariff,dbh)
       stemvol1 <- fc_treevol(mercvol,dbh)
       stembiomass <- fc_woodbiomass(stemvol1,rec$NSG)
