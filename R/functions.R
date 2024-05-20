@@ -112,8 +112,7 @@ fc_con_tariff <- function(spcode,height,dbh){
 #' @param dbh diameter at breast height in cm
 #' @param spcode species code
 #' @returns  tariff number
-#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
-#' Method B, Equation 2
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Method B, Equation 2
 #'
 fc_broad_tariff <- function (spcode,height,dbh){
   rec <- tariff_broaddf[tariff_broaddf$abbreviation == spcode,]
