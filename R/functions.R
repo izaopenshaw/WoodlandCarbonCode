@@ -2,7 +2,7 @@
 #tree carbon values
 ##########################################################
 #' @title tariff number from vol and area
-#' @description
+#' @description  todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param spcode species code
 #' @param dbh in cm
@@ -10,8 +10,7 @@
 #' @param returnv what to return, Either AGC or All
 #' @returns either AGC in tonnes [default]
 #' or All list of tariff number, merchantable volume m3, stem volume m3, stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 
 fc_agc <- function(spcode,dbh,height,returnv="AGC"){
@@ -67,16 +66,12 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 # Tariff number from vol and tree basal area
 ##########################################################
 #' @title tariff number from vol and area
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param vol = tree volume in m^3
 #' @param dbh in cm
 #' @returns  tariff number
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
-#' (Equation 1)
-#'
-#'
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). (Equation 1)
 #'
 #'
 fc_tariff_vol_area <- function(vol,dbh){
@@ -89,13 +84,12 @@ fc_tariff_vol_area <- function(vol,dbh){
 #FC conifer  tree tariff number
 ##########################################################
 #' @title Conifer tree tariff number
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param height tree height in metres
 #' @param dbh diameter at breast height in cm
 #' @returns  tariff number
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 #'
 #'
@@ -109,18 +103,17 @@ fc_con_tariff <- function(spcode,height,dbh){
   floor(rec$a1 + (rec$a2 * height) + (rec$a3 * dbh))
 }
 ##########################################################
-#FC board leaf tree tariff number
+# FC board leaf tree tariff number
 ##########################################################
-#' @title C board leaf tree tariff number
-#' @description
+#' @title Carbon tariff number for broadleaf tree
+#' @description Use DBH and tree height to calculate the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param height tree height in metres
+#' @param height tree height in meters
 #' @param dbh diameter at breast height in cm
 #' @param spcode species code
 #' @returns  tariff number
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
-#'
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' Method B, Equation 2
 #'
 fc_broad_tariff <- function (spcode,height,dbh){
   rec <- tariff_broaddf[tariff_broaddf$abbreviation == spcode,]
@@ -131,13 +124,12 @@ fc_broad_tariff <- function (spcode,height,dbh){
 #FC tariff number by stand height
 ##########################################################
 #' @title tariff number by stand height
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param height tree height in metres
 #' @param spcode species code
 #' @returns  tariff number
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 #'
 fc_stand_tariff <- function(spcode,height){
@@ -152,13 +144,12 @@ fc_stand_tariff <- function(spcode,height){
 #FC tree merchantable volume
 ##########################################################
 #' @title Forestry merchantable volume
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param tarrif tree number tariff
 #' @param dbh diameter at breast height in cm
 #' @returns  volume m^3
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 fc_merchtreevol <- function (tariff, dbh){
   ba <- (pi * dbh^2)/40000
@@ -174,12 +165,11 @@ fc_merchtreevol <- function (tariff, dbh){
 #FC tree volume
 ##########################################################
 #' @title Forestry commission tree wood volume
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param mtreevol = mercantable tree volume
 #' @returns  volume m3
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 
 fc_treevol <- function(mtreevol,dbh){
   dbh <- round(dbh)
@@ -195,13 +185,12 @@ fc_treevol <- function(mtreevol,dbh){
 #FC wood biomass
 ##########################################################
 #' @title Forestry commission wood biomass
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param treevol tree volume m^3
 #' @param nsg Nominal Specific Gravity (NSG)
 #' @returns  biomass (oven dry tonnes)
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 
 fc_woodbiomass <- function(treevol, nsg){
   treevol * nsg
@@ -210,13 +199,12 @@ fc_woodbiomass <- function(treevol, nsg){
 #FC crownbiomass
 ##########################################################
 #' @title Forestry commission root biomass estimates
-#' @description
+#' @description  todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param dbh diameter at breast height in cm
 #' @param spcode species code
 #' @returns  biomass (oven dry tonnes)
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 
 fc_crownbiomass <- function(spcode,dbh){
   #7 to 50 cm dbh
@@ -230,13 +218,12 @@ fc_crownbiomass <- function(spcode,dbh){
 #FC rootbiomass
 ##########################################################
 #' @title Forestry commission root biomass estimates
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param dbh in cm
 #' @param spcode species code
 #' @returns biomass (oven dry tonnes)
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 
 fc_rootbiomass <- function(spcode,dbh){
   #lookup
@@ -250,11 +237,11 @@ fc_rootbiomass <- function(spcode,dbh){
 #Carbon to CO2e
 ##########################################################
 #' @title Carbon to CO2 equivalent
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param carbon carbon
 #' @returns CO2e C02 equivalent
-#' @references
+#' @references todo*
 
 
 c2co2e <- function(carbon){
@@ -265,13 +252,7 @@ c2co2e <- function(carbon){
 #Plant biomass conversion to carbon
 ##########################################################
 #' @title Calculates biomass conversion to carbon
-#' @description
-#' Calculates biomass conversion to carbon using multiple methods/citations
-#' Mathews: simpliest giving 0.5
-#' IPCC simple: 0.477
-#' IPCC by type and biome
-#' Mathews simple: 0.483 with 95% confidence interval 0.003
-#' Mathews by type and biome
+#' @description todo*see end of description: Calculates biomass conversion to carbon using multiple methods/citations Mathews: simpliest giving 0.5 IPCC simple: 0.477 IPCC by type and biome Mathews simple: 0.483 with 95% confidence interval 0.003 Mathews by type and biome
 #' @author Justin Moat. J.Moat@kew.org
 #' @param biomass (usually kg or metric tonnes)
 #' @param method
@@ -284,8 +265,7 @@ c2co2e <- function(carbon){
 #' @param type Angiosperm or Conifer
 #' @param  biome tropical, Subtropical/Mediterranean,Temperate/Boreal,all
 #' @return either carbon value or list of carbon value with sd error
-#' @references
-#' Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332
+#' @references *can you see the other 2 refs? Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332
 #' IPCC. Forest lands. Intergovernmental Panel on Climate Change Guidelines for National Greenhouse Gas Inventories; Institute for Global Environmental Strategies (IGES): Hayama,Japan, 2006; Volume 4, p. 83.
 #' Matthews, G.A.R. (1993) The Carbon Content of Trees. Forestry Commission Technical Paper 4. Forestry Commission, Edinburgh. 21pp. ISBN: 0-85538-317-8
 
@@ -308,12 +288,11 @@ biomass2c <-  function(biomass,method,ci,type,biome){
 #FC Conifer seedlings and saplings to carbon
 ##########################################################
 #' @title Conifer seedlings and saplings to carbon
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param heightincm tree height in metres
 #' @returns  carbon in tonnes
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
 #'
 #'
 #
@@ -333,13 +312,12 @@ fc_con_sap_seedling2C <- function(heightincm){
 #FC Broadleaf seedlings and saplings to carbon
 ##########################################################
 #' @title Broadleaf seedlings and saplings to carbon
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param height = tree height in metres
 #' @returns  carbon in tonnes
 #' @note just uses simple linear relationship to get between measures
-#' @references
-#' Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
 #'
 #'
 #
@@ -365,7 +343,7 @@ fc_broad_sap_seedling2C <- function(heightincm){
 # Progression of errors from volume, density, biomassc = carbon
 ##########################################################
 #' @title Carbon progression of errors
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param volsd volume sd
 #' @param densd wood density sd
@@ -373,7 +351,7 @@ fc_broad_sap_seedling2C <- function(heightincm){
 #' @param nruns number of iteration, suggest 10,000 as min and 100,000 is a good number
 #' @param returnv if null then mean and sd is returned else vector of quantiles ie c(5,50,95)/100 will return 5%, mean and 95% quantiles.
 #' @returns  either vector of mean and sd or vector of quantiles
-#' @references
+#' @references todo*
 #'
 #vol <- 100
 #volsd <- 10
@@ -403,16 +381,15 @@ pro_error_carbon <- function(vol,volsd,den,densd,biom,biomsd,nruns=10000, return
 #progression of errors from height and dbh to volume
 ##########################################################
 #' @title Volume progression of errors
-#' @description
+#' @description todo*
 #' @author Justin Moat. J.Moat@kew.org
 #' @param dbh diameter at breast height (dbh) in cm
 #' @param dbhsd dbh sd
 #' @param height tree height in meters
 #' @param hsd height sd
 #' @returns  standard error
-#' @references
-# 'Eq. 4 in Chave et al., 2014 but simplied to power 1 not 0.9....
-#' @note assumes allometric equation has no error, which is not correct...
+#' @references 'Eq. 4 in Chave et al., 2014 but simplied to power 1 not 0.9...**
+#' @note assumes allometric equation has no error, which is not correct...**
 #'
 pro_error_vol <- function(dbh,dbhsd,height,hsd) {
 
