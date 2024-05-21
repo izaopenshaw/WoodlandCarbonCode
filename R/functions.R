@@ -63,16 +63,15 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 }
 
 ##########################################################
-# Tariff number from vol and tree basal area
+# Tariff number from volume and tree basal area (Eq 1)
 ##########################################################
-#' @title tariff number from vol and area
-#' @description todo*
+#' @title Tariff number from volume and basal area
+#' @description Using the sample tree’s basal area and volume to calculate the tariff number. Rounded to the nearest whole number.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param vol = tree volume in m^3
+#' @param vol tree volume in m^3
 #' @param dbh in cm
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). (Equation 1)
-#'
 #'
 fc_tariff_vol_area <- function(vol,dbh){
   ba <- (pi * dbh^2)/40000                      # tree basal area in m^2
@@ -81,49 +80,43 @@ fc_tariff_vol_area <- function(vol,dbh){
 }
 
 ##########################################################
-#FC conifer  tree tariff number
+# FC conifer tree tariff number (Eq 3)
 ##########################################################
 #' @title Conifer tree tariff number
-#' @description todo*
+#' @description Use DBH and tree height to calculate the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a3 are found in the R data file, 'tariff_coniferdf'.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param height tree height in metres
+#' @param height tree height in m
 #' @param dbh diameter at breast height in cm
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-#'
-#'
-#'
-# needs to round down
 fc_con_tariff <- function(spcode,height,dbh){
-  #height in m
-  #dbh in cm
-  #lookup
   rec <- tariff_coniferdf[tariff_coniferdf$abbreviation == spcode,]
   floor(rec$a1 + (rec$a2 * height) + (rec$a3 * dbh))
 }
 ##########################################################
-# FC board leaf tree tariff number
+# FC broadleaf tree tariff number (Eq 2)
 ##########################################################
 #' @title Carbon tariff number for broadleaf tree
-#' @description Use DBH and tree height to calculate the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
+#' @description Use DBH and tree height to derive the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
 #' @author Justin Moat. J.Moat@kew.org
 #' @param height tree height in meters
 #' @param dbh diameter at breast height in cm
 #' @param spcode species code
 #' @returns  tariff number
-#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Method B, Equation 2
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Method B, Equation 2.
 #'
 fc_broad_tariff <- function (spcode,height,dbh){
   rec <- tariff_broaddf[tariff_broaddf$abbreviation == spcode,]
   floor(rec$a1 + (rec$a2 * height) + (rec$a3 * dbh) + (rec$a4 * dbh * height))
 }
 
+
 ##########################################################
-#FC tariff number by stand height
+#FC tariff number by stand height (Eq 4)
 ##########################################################
-#' @title tariff number by stand height
-#' @description todo*
+#' @title Tariff number by stand height
+#' @description Use the estimated stand top height to calculate the stand tariff number.
 #' @author Justin Moat. J.Moat@kew.org
 #' @param height tree height in metres
 #' @param spcode species code
@@ -132,20 +125,18 @@ fc_broad_tariff <- function (spcode,height,dbh){
 #'
 #'
 fc_stand_tariff <- function(spcode,height){
-  #height in m
-  #dbh in cm
-  #lookup
-  tariff <- a1 + (a2 * h) + (a3 * h^2)
+  rec <- tarif2heightdf[tarif2heightdf$abbreviation == spcode,]
+  tariff <- rec$a1 + (rec$a2 * height) + (rec$a3 * height^2)
 }
 
 
 ##########################################################
-#FC tree merchantable volume
+# FC tree merchantable volume (Eq 5)
 ##########################################################
 #' @title Forestry merchantable volume
-#' @description todo*
+#' @description Use the tree tariff number and DBH to estimate the mean merchantable tree volume.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param tarrif tree number tariff
+#' @param tarrif tree or stand tariff number
 #' @param dbh diameter at breast height in cm
 #' @returns  volume m^3
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
@@ -161,14 +152,14 @@ fc_merchtreevol <- function (tariff, dbh){
   return(vol)
 }
 ##########################################################
-#FC tree volume
+# FC tree volume
 ##########################################################
 #' @title Forestry commission tree wood volume
-#' @description todo*
+#' @description Use the tariff number and DBH to estimate the mean merchantable tree volume.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param mtreevol = mercantable tree volume
-#' @returns  volume m3
-#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @param mtreevol merchantable tree volume
+#' @returns  volume m^3
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Equation 5.
 
 fc_treevol <- function(mtreevol,dbh){
   dbh <- round(dbh)
