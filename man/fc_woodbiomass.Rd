@@ -9,13 +9,13 @@ fc_woodbiomass(treevol, nsg)
 \arguments{
 \item{treevol}{tree volume m^3}
 
-\item{nsg}{Nominal Specific Gravity (NSG)}
+\item{nsg}{Nominal Specific Gravity (nsg)}
 }
 \value{
-biomass (oven dry tonnes)
+biomass (in oven dry tonnes)
 }
 \description{
-Forestry commission wood biomass
+Multiply the mean total tree volume by the nominal specific gravity to give the biomass, in oven dry tonnes.
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).

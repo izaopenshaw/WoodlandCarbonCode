@@ -20,7 +20,7 @@ either AGC in tonnes \link{default}
 or All list of tariff number, merchantable volume m3, stem volume m3, stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
 }
 \description{
-tariff number from vol and area
+todo*
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).

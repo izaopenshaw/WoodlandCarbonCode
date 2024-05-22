@@ -15,7 +15,7 @@ fc_rootbiomass(spcode, dbh)
 biomass (oven dry tonnes)
 }
 \description{
-Forestry commission root biomass estimates
+todo*
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).

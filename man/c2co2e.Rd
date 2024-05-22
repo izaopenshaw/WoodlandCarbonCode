@@ -13,7 +13,10 @@ c2co2e(carbon)
 CO2e C02 equivalent
 }
 \description{
-Carbon to CO2 equivalent
+todo*
+}
+\references{
+todo*
 }
 \author{
 Justin Moat. J.Moat@kew.org

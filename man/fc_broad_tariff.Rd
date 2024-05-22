@@ -2,14 +2,14 @@
 % Please edit documentation in R/functions.R
 \name{fc_broad_tariff}
 \alias{fc_broad_tariff}
-\title{C board leaf tree tariff number}
+\title{Carbon tariff number for broadleaf tree}
 \usage{
 fc_broad_tariff(spcode, height, dbh)
 }
 \arguments{
 \item{spcode}{species code}
 
-\item{height}{tree height in metres}
+\item{height}{tree height in meters}
 
 \item{dbh}{diameter at breast height in cm}
 }
@@ -17,10 +17,10 @@ fc_broad_tariff(spcode, height, dbh)
 tariff number
 }
 \description{
-C board leaf tree tariff number
+Use DBH and tree height to derive the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
 }
 \references{
-Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Method B, Equation 2.
 }
 \author{
 Justin Moat. J.Moat@kew.org

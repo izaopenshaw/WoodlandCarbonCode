@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{fc_stand_tariff}
 \alias{fc_stand_tariff}
-\title{tariff number by stand height}
+\title{Tariff number by stand height}
 \usage{
 fc_stand_tariff(spcode, height)
 }
@@ -15,7 +15,7 @@ fc_stand_tariff(spcode, height)
 tariff number
 }
 \description{
-tariff number by stand height
+Use the estimated stand top height to calculate the stand tariff number.
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).

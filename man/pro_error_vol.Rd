@@ -19,10 +19,13 @@ pro_error_vol(dbh, dbhsd, height, hsd)
 standard error
 }
 \description{
-Volume progression of errors
+todo*
 }
 \note{
-assumes allometric equation has no error, which is not correct...
+assumes allometric equation has no error, which is not correct...**
+}
+\references{
+'Eq. 4 in Chave et al., 2014 but simplied to power 1 not 0.9...**
 }
 \author{
 Justin Moat. J.Moat@kew.org

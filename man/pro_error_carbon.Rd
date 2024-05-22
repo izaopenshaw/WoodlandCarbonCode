@@ -30,7 +30,10 @@ pro_error_carbon(
 either vector of mean and sd or vector of quantiles
 }
 \description{
-Carbon progression of errors
+todo*
+}
+\references{
+todo*
 }
 \author{
 Justin Moat. J.Moat@kew.org

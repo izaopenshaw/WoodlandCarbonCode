@@ -25,15 +25,10 @@ Thomas = lookup by type (Angiosperm or Conifer) and biome (tropical, Subtropical
 either carbon value or list of carbon value with sd error
 }
 \description{
-Calculates biomass conversion to carbon using multiple methods/citations
-Mathews: simpliest giving 0.5
-IPCC simple: 0.477
-IPCC by type and biome
-Mathews simple: 0.483 with 95\% confidence interval 0.003
-Mathews by type and biome
+todo*see end of description: Calculates biomass conversion to carbon using multiple methods/citations Mathews: simpliest giving 0.5 IPCC simple: 0.477 IPCC by type and biome Mathews simple: 0.483 with 95\% confidence interval 0.003 Mathews by type and biome
 }
 \references{
-Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332
+*can you see the other 2 refs? Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332
 IPCC. Forest lands. Intergovernmental Panel on Climate Change Guidelines for National Greenhouse Gas Inventories; Institute for Global Environmental Strategies (IGES): Hayama,Japan, 2006; Volume 4, p. 83.
 Matthews, G.A.R. (1993) The Carbon Content of Trees. Forestry Commission Technical Paper 4. Forestry Commission, Edinburgh. 21pp. ISBN: 0-85538-317-8
 }

@@ -155,33 +155,33 @@ fc_merchtreevol <- function (tariff, dbh){
 # FC tree volume
 ##########################################################
 #' @title Forestry commission tree wood volume
-#' @description Use the tariff number and DBH to estimate the mean merchantable tree volume.
+#' @description Calculate the mean total stem volume by multiplying the mean merchantable tree volume by the coefficient from stemvol.rda
 #' @author Justin Moat. J.Moat@kew.org
 #' @param mtreevol merchantable tree volume
+#' @param dbh diameter at breast height in cm (above 6.5 cm)
 #' @returns  volume m^3
-#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Equation 5.
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 
 fc_treevol <- function(mtreevol,dbh){
   dbh <- round(dbh)
-  #lookup
   if (dbh < maxstemvol & dbh > 6.5){
-    cf <- stemvol[stemvol$dbh..cm. == dbh,]$X   # max dbh from stemvol lookup is 7
+    cf <- stemvol[stemvol$dbh..cm. == dbh,]$X
     return (cf * mtreevol)
   } else {
     return (mtreevol)
   }
 }
 ##########################################################
-#FC wood biomass
+# FC wood biomass
 ##########################################################
 #' @title Forestry commission wood biomass
-#' @description todo*
+#' @description Multiply the mean total tree volume by the nominal specific gravity to give the biomass, in oven dry tonnes.
 #' @author Justin Moat. J.Moat@kew.org
 #' @param treevol tree volume m^3
-#' @param nsg Nominal Specific Gravity (NSG)
-#' @returns  biomass (oven dry tonnes)
+#' @param nsg Nominal Specific Gravity (nsg)
+#' @returns  biomass (in oven dry tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
-
+#'
 fc_woodbiomass <- function(treevol, nsg){
   treevol * nsg
 }

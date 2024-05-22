@@ -9,13 +9,13 @@ fc_merchtreevol(tariff, dbh)
 \arguments{
 \item{dbh}{diameter at breast height in cm}
 
-\item{tarrif}{tree number tariff}
+\item{tarrif}{tree or stand tariff number}
 }
 \value{
 volume m^3
 }
 \description{
-Forestry merchantable volume
+Use the tree tariff number and DBH to estimate the mean merchantable tree volume.
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).

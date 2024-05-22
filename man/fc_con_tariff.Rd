@@ -7,7 +7,7 @@
 fc_con_tariff(spcode, height, dbh)
 }
 \arguments{
-\item{height}{tree height in metres}
+\item{height}{tree height in m}
 
 \item{dbh}{diameter at breast height in cm}
 }
@@ -15,7 +15,7 @@ fc_con_tariff(spcode, height, dbh)
 tariff number
 }
 \description{
-Conifer tree tariff number
+Use DBH and tree height to calculate the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a3 are found in the R data file, 'tariff_coniferdf'.
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).

@@ -2,12 +2,12 @@
 % Please edit documentation in R/functions.R
 \name{fc_tariff_vol_area}
 \alias{fc_tariff_vol_area}
-\title{tariff number from vol and area}
+\title{Tariff number from volume and basal area}
 \usage{
 fc_tariff_vol_area(vol, dbh)
 }
 \arguments{
-\item{vol}{= tree volume in m^3}
+\item{vol}{tree volume in m^3}
 
 \item{dbh}{in cm}
 }
@@ -15,11 +15,10 @@ fc_tariff_vol_area(vol, dbh)
 tariff number
 }
 \description{
-tariff number from vol and area
+Using the sample tree’s basal area and volume to calculate the tariff number. Rounded to the nearest whole number.
 }
 \references{
-Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
-(Equation 1)
+Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). (Equation 1)
 }
 \author{
 Justin Moat. J.Moat@kew.org

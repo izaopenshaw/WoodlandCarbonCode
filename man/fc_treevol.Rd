@@ -7,13 +7,15 @@
 fc_treevol(mtreevol, dbh)
 }
 \arguments{
-\item{mtreevol}{= mercantable tree volume}
+\item{mtreevol}{merchantable tree volume}
+
+\item{dbh}{diameter at breast height in cm (above 6.5 cm)}
 }
 \value{
-volume m3
+volume m^3
 }
 \description{
-Forestry commission tree wood volume
+Calculate the mean total stem volume by multiplying the mean merchantable tree volume by the coefficient from stemvol.rda
 }
 \references{
 Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
