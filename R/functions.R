@@ -68,10 +68,14 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 #' @title Tariff number from volume and basal area
 #' @description Using the sample tree’s basal area and volume to calculate the tariff number. Rounded to the nearest whole number.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param vol tree volume in m^3
-#' @param dbh in cm
-#' @returns  tariff number
+#' @param vol tree volume in metres cubed
+#' @param dbh diameter at breast height in centimetres
+#' @returns  Tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). (Equation 1)
+#' @examples
+#' vol = 50
+#' dbh = 50
+#' fc_tariff_vol_area(vol, dbh)
 #'
 fc_tariff_vol_area <- function(vol,dbh){
   ba <- (pi * dbh^2)/40000                      # tree basal area in m^2
