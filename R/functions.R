@@ -66,7 +66,7 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 # Tariff number from volume and tree basal area (Eq 1)
 ##########################################################
 #' @title Tariff number from volume and basal area
-#' @description Using the sample tree’s basal area and volume to calculate the tariff number. Rounded to the nearest whole number.
+#' @description Using the sample tree’s basal area and volume to calculate the tariff number. Basal area is calculated by ba = (pi * dbh^2)/40000.
 #' @author Justin Moat. J.Moat@kew.org
 #' @param vol tree volume in metres cubed
 #' @param dbh diameter at breast height in centimetres
@@ -78,6 +78,9 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 #' fc_tariff_vol_area(vol, dbh)
 #'
 fc_tariff_vol_area <- function(vol,dbh){
+  if (!is.numeric(vol) || any(vol < 0) || !is.numeric(dbh) || any(dbh < 0)) {
+    stop("arguments must be non-negative numeric values")
+  }
   ba <- (pi * dbh^2)/40000                      # tree basal area in m^2
   a1 <- (vol - 0.005002986)/(ba - 0.003848451)
   (3.174106384 * a1) + 0.138763302
