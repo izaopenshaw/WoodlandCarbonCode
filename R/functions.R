@@ -2,65 +2,111 @@
 #tree carbon values
 ##########################################################
 #' @title tariff number from vol and area
-#' @description  todo*
-#' @author Justin Moat. J.Moat@kew.org
+#' @description  Function that inputs tree species code, DBH and height values and returns the carbon
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw I.Openshaw@kew.org
 #' @param spcode species code
-#' @param dbh in cm
-#' @param height in m
-#' @param returnv what to return, Either AGC or All
-#' @returns either AGC in tonnes [default]
-#' or All list of tariff number, merchantable volume m3, stem volume m3, stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
+#' @param dbh in centimetres
+#' @param height in metres
+#' @param returnv To return either 'AGC' [default] or 'All'
+#' @returns either Above ground carbon, AGC in tonnes, or a list of tariff number, merchantable volume (metres cubed), stem volume (metres cubed), stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 
+# VERSION 2
 fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 
-  if(!is.numeric(dbh))stop("dbh must be numeric")
-  if(!is.numeric(height))stop("height must be numeric")
+  # Check arguments
+  if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
+  if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
+  if(!is.character(spcode))stop("spcode must be a character")
 
-  rec <- sp_lookupdf[sp_lookupdf$short == spcode,]
+  # Ensure inputs are of the same length
+  if(length(spcode) != length(dbh) || length(spcode) != length(height) || length(dbh) != length(height)) {
+    stop("spcode, dbh, and height must be of the same length")}
+
+  results <- list()
+
+  for (i in seq_along(spcode)) {
+    dbh <- dbh[i]
+
+    # Lookup species data from code
+    rec <- sp_lookupdf[sp_lookupdf$short == spcode[i], ]
+
+    # Check if the species code was found
+    if (nrow(rec) == 0) {
+      warning("The spcode value was not found: ", spcode[i])
+      next
+    }
+
+    tarifflokupcode <- rec$single
+    type <- rec$type
+
+    # Get tariff number depending on broadleaf or conifer
+    if (type == 'broadleaf') {
+      tariff <- fc_broad_tariff(tarifflokupcode, height[i], dbh)
+    } else if (type == "conifer") {
+      tariff <- fc_con_tariff(tarifflokupcode, height[i], dbh)
+    }
+
+    mercvol <- fc_merchtreevol(tariff, dbh)         # Merchantable tree volume
+    stemvol <- fc_treevol(mercvol, dbh)             # Stem volume
+    stembiomass <- fc_woodbiomass(stemvol, rec$NSG) # Stem Biomass
+    crownbiomass <- fc_crownbiomass(rec$Crown, dbh) # Crown Biomass
+    AGC <- (stembiomass + crownbiomass) * 0.5       # Total above ground carbon *****to change this fraction as an input
+
+    if (returnv == "AGC") {
+      results[[i]] <- AGC
+    } else {
+      rootbiomass <- fc_rootbiomass(rec$Root, dbh) # Root Biomass
+      results[[i]] <- list(sp_code = spcode, tariff = tariff, merc_vol = mercvol,
+                           stem_vol = stemvol, stem_biomass = stembiomass,
+                           crown_biomass = crownbiomass, root_biomass = rootbiomass, AGC = AGC)
+      }
+  }
+  return(results)
+}
+
+# VERSION 1
+fc_agc <- function(spcode,dbh,height,returnv="AGC"){
+
+  # Check arguments
+  if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
+  if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
+  if (!is.character(spcode))stop("spcode must be a character")
+
+  # Lookup species data from code
+  rec <- sp_lookupdf[sp_lookupdf$short %in% spcode, ]
+
+  # Check if all species code values were found
+  not_found <- setdiff(spcode, rec$short)
+  if (length(not_found) > 0) {warning("The following spcode values were not found: ", paste(not_found, collapse = ", "))}
+
   tarifflokupcode <- rec$single
   type <- rec$type
 
-  if (returnv == "AGC"){
-    if (type == 'broadleaf'){
-      tariff <- fc_broad_tariff(tarifflokupcode,height,dbh)
-      mercvol <- fc_merchtreevol(tariff,dbh)
-      stemvol1 <- fc_treevol(mercvol,dbh)
-      stembiomass <- fc_woodbiomass(stemvol1,rec$NSG)
-      crownbiomass <- fc_crownbiomass(rec$Crown,dbh)
-      AGC <- (stembiomass + crownbiomass) * 0.5
-    } else if (type == "conifer") {
-      tariff <- fc_con_tariff(tarifflokupcode,height,dbh)
-      mercvol <- fc_merchtreevol(tariff,dbh)
-      stemvol1 <- fc_treevol(mercvol,dbh)
-      stembiomass <- fc_woodbiomass(stemvol1,rec$NSG)
-      crownbiomass <- fc_crownbiomass(rec$Crown,dbh)
-      AGC <- (stembiomass + crownbiomass) * 0.5
-    }
-  } else {
-    if (type == 'broadleaf'){
-      tariff <- fc_broad_tariff(tarifflokupcode,height,dbh)
-      mercvol <- fc_merchtreevol(tariff,dbh)
-      stemvol1 <- fc_treevol(mercvol,dbh)
-      stembiomass <- fc_woodbiomass(stemvol1,rec$NSG)
-      crownbiomass <- fc_crownbiomass(rec$Crown,dbh)
-      rootbiomass <- fc_rootbiomass(rec$Root,dbh)
-      AGC <- (stembiomass + crownbiomass) * 0.5
-      list(sp_code = spcode, tariff=tariff,merc_vol=mercvol,stem_vol=stemvol1,stem_biomass=stembiomass,crown_biomass=crownbiomass,root_biomass=rootbiomass,AGC=AGC)
-    } else if (type == "conifer") {
-      tariff <- fc_con_tariff(tarifflokupcode,height,dbh)
-      mercvol <- fc_merchtreevol(tariff,dbh)
-      stemvol1 <- fc_treevol(mercvol,dbh)
-      stembiomass <- fc_woodbiomass(stemvol1,rec$NSG)
-      crownbiomass <- fc_crownbiomass(rec$Crown,dbh)
-      rootbiomass <- fc_rootbiomass(rec$Root,dbh)
-      AGC <- (stembiomass + crownbiomass) * 0.5
-      list(sp_code = spcode,tariff=tariff,merc_vol=mercvol,stem_vol=stemvol1,stem_biomass=stembiomass,crown_biomass=crownbiomass,root_biomass=rootbiomass,AGC=AGC)
-    }
+  # Get tariff number depending on broadleaf or conifer
+  if (type == 'broadleaf'){
+    tariff <- fc_broad_tariff(tarifflokupcode, height, dbh)
+  } else if (type == "conifer") {
+    tariff <- fc_con_tariff(tarifflokupcode, height, dbh)
   }
-  return(AGC)
+
+  mercvol <- fc_merchtreevol(tariff, dbh)          # Merchantable tree volume
+  stemvol <- fc_treevol(mercvol, dbh)             # Stem volume
+  stembiomass <- fc_woodbiomass(stemvol, rec$NSG) # Stem Biomass
+  crownbiomass <- fc_crownbiomass(rec$Crown, dbh)  # Crown Biomass
+  AGC <- (stembiomass + crownbiomass) * 0.5        # Total above ground carbon
+
+  if(returnv == "AGC"){
+    return(AGC)
+  } else {
+    rootbiomass <- fc_rootbiomass(rec$Root, dbh)   # Root Biomass
+    return(list(sp_code = spcode, tariff = tariff, merc_vol = mercvol,
+                stem_vol = stemvol, stem_biomass = stembiomass,
+                crown_biomass = crownbiomass, root_biomass = rootbiomass, AGC = AGC))
+  }
 }
+
 
 ##########################################################
 # Tariff number from volume and tree basal area (Eq 1)
@@ -72,55 +118,63 @@ fc_agc <- function(spcode,dbh,height,returnv="AGC"){
 #' @param dbh diameter at breast height in centimetres
 #' @returns  Tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). (Equation 1)
-#' @examples
-#' vol = 50
-#' dbh = 50
-#' fc_tariff_vol_area(vol, dbh)
 #'
-fc_tariff_vol_area <- function(vol,dbh){
+fc_tariff_vol_area <- function(vol, dbh){
   if (!is.numeric(vol) || any(vol < 0) || !is.numeric(dbh) || any(dbh < 0)) {
-    stop("arguments must be non-negative numeric values")
+    stop("vol and dbh must be non-negative numeric values")
   }
   ba <- (pi * dbh^2)/40000                      # tree basal area in m^2
   a1 <- (vol - 0.005002986)/(ba - 0.003848451)
-  (3.174106384 * a1) + 0.138763302
+  tariff <- (3.174106384 * a1) + 0.138763302
+  return(tariff)
 }
 
 ##########################################################
 # FC conifer tree tariff number (Eq 3)
 ##########################################################
 #' @title Conifer tree tariff number
-#' @description Use DBH and tree height to calculate the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a3 are found in the R data file, 'tariff_coniferdf'.
+#' @description Use DBH and tree height to calculate the tariff number of each sample tree. Species-specific estimates of a1 – a3 are found in the R data file, 'tariff_coniferdf'.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param height tree height in m
-#' @param dbh diameter at breast height in cm
+#' @param height tree height in metres
+#' @param dbh diameter at breast height in centimetres
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_con_tariff <- function(spcode,height,dbh){
-  rec <- tariff_coniferdf[tariff_coniferdf$abbreviation == spcode,]
-  floor(rec$a1 + (rec$a2 * height) + (rec$a3 * dbh))
+fc_con_tariff <- function(spcode, height, dbh) {
+  if (!is.numeric(height) || !is.numeric(dbh) || height < 0 || dbh < 0) {
+    stop("height and dbh must be non-negative numeric values")
+  }
+
+  rec <- tariff_coniferdf[tariff_coniferdf$abbreviation == spcode, ]
+  if(nrow(rec) == 0)stop("The specified 'spcode' is not found in tariff_coniferdf.rda")
+
+  tariff <- rec$a1 + (rec$a2 * height) + (rec$a3 * dbh)
+  return(tariff)
 }
+
 ##########################################################
 # FC broadleaf tree tariff number (Eq 2)
 ##########################################################
 #' @title Carbon tariff number for broadleaf tree
-#' @description Use DBH and tree height to derive the tariff number of each sample tree. Rounded to the nearest whole number. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
+#' @description Use DBH and tree height to derive the tariff number of each sample tree. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
 #' @author Justin Moat. J.Moat@kew.org
 #' @param height tree height in meters
-#' @param dbh diameter at breast height in cm
+#' @param dbh diameter at breast height in centimetres
 #' @param spcode species code
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Method B, Equation 2.
 #'
-fc_broad_tariff <- function (spcode,height,dbh){
-  rec <- tariff_broaddf[tariff_broaddf$abbreviation == spcode,]
-  floor(rec$a1 + (rec$a2 * height) + (rec$a3 * dbh) + (rec$a4 * dbh * height))
+fc_broad_tariff <- function(spcode, height, dbh) {
+  if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
+  if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
+
+  rec <- tariff_broaddf[tariff_broaddf$abbreviation == spcode, ]
+  tariff <- rec$a1 + (rec$a2 * height) + (rec$a3 * dbh) + (rec$a4 * dbh * height)
+  return(tariff)
 }
 
-
 ##########################################################
-#FC tariff number by stand height (Eq 4)
+# FC tariff number by stand height (Eq 4)
 ##########################################################
 #' @title Tariff number by stand height
 #' @description Use the estimated stand top height to calculate the stand tariff number.
@@ -130,12 +184,17 @@ fc_broad_tariff <- function (spcode,height,dbh){
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-#'
-fc_stand_tariff <- function(spcode,height){
-  rec <- tarif2heightdf[tarif2heightdf$abbreviation == spcode,]
-  tariff <- rec$a1 + (rec$a2 * height) + (rec$a3 * height^2)
-}
+fc_stand_tariff <- function(spcode, height) {
+  if(!is.numeric(spcode) || any(spcode<0))stop("spcode must be numeric and positive")
+  if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
 
+  rec <- tarif2heightdf[tarif2heightdf$abbreviation == spcode, ]
+
+  if(nrow(rec)==0){stop("The species code, 'spcode' is not found in data(tarif2heightdf)")}
+
+  tariff <- rec$a1 + (rec$a2 * height) + (rec$a3 * height^2)
+  return(tariff)
+}
 
 ##########################################################
 # FC tree merchantable volume (Eq 5)
@@ -143,103 +202,127 @@ fc_stand_tariff <- function(spcode,height){
 #' @title Forestry merchantable volume
 #' @description Use the tree tariff number and DBH to estimate the mean merchantable tree volume.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param tarrif tree or stand tariff number
-#' @param dbh diameter at breast height in cm
-#' @returns  volume m^3
+#' @param tariff tree or stand tariff number
+#' @param dbh diameter at breast height in centimetres
+#' @returns  volume metres cubed
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_merchtreevol <- function (tariff, dbh){
-  ba <- (pi * dbh^2)/40000
+fc_merchtreevol <- function(tariff, dbh) {
+  if(!is.numeric(tariff) || any(tariff<0))stop("tariff must be numeric and positive")
+  if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
+
+  ba <- (pi * dbh^2) / 40000
   a2 <- 0.315049301 * (tariff - 0.138763302)
   a1 <- (0.0360541 * tariff) - (a2 * 0.118288)
   vol <- a1 + (a2 * ba)
-  if(vol < 0){
-    vol = 0
+  if (vol < 0) {
+    vol <- 0
   }
   return(vol)
 }
+
 ##########################################################
 # FC tree volume
 ##########################################################
 #' @title Forestry commission tree wood volume
-#' @description Calculate the mean total stem volume by multiplying the mean merchantable tree volume by the coefficient from stemvol.rda
+#' @description Calculate the stem volume by multiplying the merchantable tree volume by the appropriate species multiplication factor from stemvol.rda
 #' @author Justin Moat. J.Moat@kew.org
 #' @param mtreevol merchantable tree volume
-#' @param dbh diameter at breast height in cm (above 6.5 cm)
-#' @returns  volume m^3
+#' @param dbh diameter at breast height in centimeters (greater than 6.5 cm)
+#' @returns  volume metres cubed
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#'
+fc_treevol <- function(mtreevol, dbh) {
 
-fc_treevol <- function(mtreevol,dbh){
+  if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
+  if(!is.numeric(mtreevol) || any(mtreevol<0))stop("mtreevol must be numeric and positive")
+
   dbh <- round(dbh)
-  if (dbh < maxstemvol & dbh > 6.5){
-    cf <- stemvol[stemvol$dbh..cm. == dbh,]$X
-    return (cf * mtreevol)
+  if (dbh < maxstemvol & dbh > 6.5) {
+    cf <- stemvol[stemvol$dbh..cm. == dbh, ]$X
+    return(cf * mtreevol)
   } else {
-    return (mtreevol)
+    if(dbh < 6.5){warning("dbh is less than 6.5 and multiplication factor is not specified")}
+    return(mtreevol)
   }
 }
+
 ##########################################################
 # FC wood biomass
 ##########################################################
 #' @title Forestry commission wood biomass
 #' @description Multiply the mean total tree volume by the nominal specific gravity to give the biomass, in oven dry tonnes.
 #' @author Justin Moat. J.Moat@kew.org
-#' @param treevol tree volume m^3
-#' @param nsg Nominal Specific Gravity (nsg)
-#' @returns  biomass (in oven dry tonnes)
+#' @param treevol tree volume in metres cubed
+#' @param nsg Nominal Specific Gravity
+#' @returns  biomass in oven dry tonnes
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_woodbiomass <- function(treevol, nsg){
-  treevol * nsg
-}
-##########################################################
-#FC crownbiomass
-##########################################################
-#' @title Forestry commission root biomass estimates
-#' @description  todo*
-#' @author Justin Moat. J.Moat@kew.org
-#' @param dbh diameter at breast height in cm
-#' @param spcode species code
-#' @returns  biomass (oven dry tonnes)
-#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+fc_woodbiomass <- function(treevol, nsg) {
 
-fc_crownbiomass <- function(spcode,dbh){
-  #7 to 50 cm dbh
-  #lookup
-  rec <- crown_biomasdf[crown_biomasdf$Code == spcode,]
-  if (dbh <= 50) {cb <- cbiomass <- rec$b1 * dbh^rec$p} else
-  { cb <- rec$A + rec$b2 * dbh}
-  return (cb)
+  if(!is.numeric(treevol) || any(treevol<0))stop("treevol must be numeric and positive")
+  if(!is.numeric(nsg) || any(nsg<0))stop("nsg must be numeric and positive")
+
+  return(treevol * nsg)
 }
+
 ##########################################################
-#FC rootbiomass
+# FC crown biomass (Eq 6 & 7)
+##########################################################
+#' @title Forestry commission crown biomass estimates
+#' @description  Function to find crown biomass (composed of branches, stem tips and foliage) depending on species and DBH
+#' @author Justin Moat. J.Moat@kew.org
+#' @param dbh diameter at breast height in centimetres
+#' @param spcode Crown biomass species code, crown_biomasdf$Code which relates to sp_lookupdf$Crown
+#' @returns  biomass (oven dry tonnes)
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Section 5.2.2.
+#'
+fc_crownbiomass <- function(spcode, dbh) {
+  if(!is.numeric(dbh) || dbh < 0)stop("Argument 'dbh' must be numeric and non-negative")
+  if(dbh < 7){warning("equation is only specifed for dbh equal to or greater than 7")}
+
+  rec <- crown_biomasdf[crown_biomasdf$Code == spcode, ]
+  if(nrow(rec)==0){stop("The species code, 'spcode' is not found in data(crown_biomasdf), see data(sp_lookupdf coloumn 'Crown'")}
+
+  if (dbh <= 50) {
+    crownbiomass <- rec$b1 * dbh^rec$p
+  } else {
+    crownbiomass <- rec$A + rec$b2 * dbh
+  }
+  return(crownbiomass)
+}
+
+##########################################################
+# FC Root Biomass (Eq 8 & 9)
 ##########################################################
 #' @title Forestry commission root biomass estimates
-#' @description todo*
+#' @description Function to calculate the root biomass depending on species and DBH
 #' @author Justin Moat. J.Moat@kew.org
-#' @param dbh in cm
+#' @param dbh diameter at breast height (1.3 m) in centimetres
 #' @param spcode species code
 #' @returns biomass (oven dry tonnes)
-#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
+#' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Section 5.2.3.
 
 fc_rootbiomass <- function(spcode,dbh){
-  #lookup
-  rec <- root_biomassdf[root_biomassdf$Code == spcode,]
+  if(!is.numeric(dbh) || dbh < 0)stop("Argument 'dbh' must be numeric and non-negative")
 
-  if (dbh <= 30) {rb <- rec$b1 * dbh^2.5} else
-  {rb <- rec$a + rec$b2 * dbh}
-  return (rb)
+  rec <- root_biomassdf[root_biomassdf$Code == spcode,]
+  if(nrow(rec)==0){stop("The species code, 'spcode' is not found in data(root_biomassdf), see data(sp_lookupdf coloumn 'Root'")}
+
+  if (dbh <= 30) {
+    rootbiomass <- rec$b1 * dbh^2.5
+  } else{
+    rootbiomass <- rec$a + rec$b2 * dbh}
+  return (rootbiomass)
 }
 ##########################################################
-#Carbon to CO2e
+# Carbon to CO2e
 ##########################################################
 #' @title Carbon to CO2 equivalent
-#' @description todo*
+#' @description Function to convert from carbon to carbon dioxide equivalent
 #' @author Justin Moat. J.Moat@kew.org
 #' @param carbon carbon
-#' @returns CO2e C02 equivalent
-#' @references todo*
-
+#' @returns carbon dioxide equivalent
 
 c2co2e <- function(carbon){
   carbon * 44/12
@@ -262,10 +345,9 @@ c2co2e <- function(carbon){
 #' @param type Angiosperm or Conifer
 #' @param  biome tropical, Subtropical/Mediterranean,Temperate/Boreal,all
 #' @return either carbon value or list of carbon value with sd error
-#' @references *can you see the other 2 refs? Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332
-#' IPCC. Forest lands. Intergovernmental Panel on Climate Change Guidelines for National Greenhouse Gas Inventories; Institute for Global Environmental Strategies (IGES): Hayama,Japan, 2006; Volume 4, p. 83.
-#' Matthews, G.A.R. (1993) The Carbon Content of Trees. Forestry Commission Technical Paper 4. Forestry Commission, Edinburgh. 21pp. ISBN: 0-85538-317-8
-
+#' @references (1) Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332.
+#' (2) IPCC. Forest lands. Intergovernmental Panel on Climate Change Guidelines for National Greenhouse Gas Inventories; Institute for Global Environmental Strategies (IGES): Hayama,Japan, 2006; Volume 4, p. 83.
+#' (3) Matthews, G.A.R. (1993) The Carbon Content of Trees. Forestry Commission Technical Paper 4. Forestry Commission, Edinburgh. 21pp. ISBN: 0-85538-317-8
 
 biomass2c <-  function(biomass,method,ci,type,biome){
   #or add more detail to this
@@ -291,8 +373,7 @@ biomass2c <-  function(biomass,method,ci,type,biome){
 #' @returns  carbon in tonnes
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
 #'
-#'
-#
+
 fc_con_sap_seedling2C <- function(heightincm){
   b <- tail(seedlings_conifer[seedlings_conifer$height.cm <= heightincm,],1)
   t <- head(seedlings_conifer[seedlings_conifer$height.cm >= heightincm,],1)
