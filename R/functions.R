@@ -1,19 +1,20 @@
 ##########################################################
 #tree carbon values
 ##########################################################
-#' @title tariff number from vol and area
-#' @description  Function that inputs tree species code, DBH and height values and returns the carbon
+#' @title Calculate above ground carbon
+#' @description  Function that inputs tree species code, DBH, height and method for converting biomass to carbon, and returns the carbon estimate
 #' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw I.Openshaw@kew.org
 #' @param spcode species code
 #' @param dbh in centimetres
 #' @param height in metres
+#' @param method of converting biomass to carbon. See biomass2c function
 #' @param returnv To return either 'AGC' [default] or 'All'
 #' @returns either Above ground carbon, AGC in tonnes, or a list of tariff number, merchantable volume (metres cubed), stem volume (metres cubed), stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 
 # VERSION 2
-fc_agc <- function(spcode,dbh,height,returnv="AGC"){
+fc_agb <- function(spcode,dbh,height,method,returnv="AGB"){
 
   # Check arguments
   if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
@@ -329,39 +330,57 @@ c2co2e <- function(carbon){
 }
 
 ##########################################################
-#Plant biomass conversion to carbon
+# Plant biomass conversion to carbon
 ##########################################################
 #' @title Calculates biomass conversion to carbon
-#' @description todo*see end of description: Calculates biomass conversion to carbon using multiple methods/citations Mathews: simpliest giving 0.5 IPCC simple: 0.477 IPCC by type and biome Mathews simple: 0.483 with 95% confidence interval 0.003 Mathews by type and biome
-#' @author Justin Moat. J.Moat@kew.org
+#' @description Converts biomass to carbon values using the carbon volatile fraction from chosen method/citation.
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param biomass (usually kg or metric tonnes)
 #' @param method
-#' Thomas_sim = simple with biomass 0.483 and 95% ci of 0.003, can be used for error progression (default)
-#' Matthews = simpliest with biomass:carbon 0.5 (Matthews 1993)
-#' IPCC_sim = simple with biomass 0.477 (IPCC 2006)
-#' IPCC = lookup by type (Angiosperm or Conifer) and biome (tropical, Subtropical/Mediterranean,Temperate/Boreal,all)
-#' Thomas = lookup by type (Angiosperm or Conifer) and biome (tropical, Subtropical/Mediterranean,Temperate/Boreal,all)
-#' @param ci confidence interval returns TRUE or False (default)
-#' @param type Angiosperm or Conifer
-#' @param  biome tropical, Subtropical/Mediterranean,Temperate/Boreal,all
+#' \describe{
+  #'   \item{Matthews1}{Simplest with the carbon volatile fraction, CVF = 50% (Matthews 1993)}
+  #'   \item{Matthews2}{CVF based on type (broadleaf or conifer)}
+  #'   \item{IPCC1}{Simple with CVF = 47.7% (IPCC 2006)}
+  #'   \item{IPCC2}{Lookup CVF by type and biome}
+  #'   \item{Thomas1}{Simple with biomass 0.483 and 95% CI of 0.003, can be used for error progression}
+  #'   \item{Thomas2}{Lookup by type and biome}
+#' @param type broadleaf or conifer
+#' @param biome tropical, subtropical, mediterranean, temperate or boreal
 #' @return either carbon value or list of carbon value with sd error
 #' @references (1) Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332.
 #' (2) IPCC. Forest lands. Intergovernmental Panel on Climate Change Guidelines for National Greenhouse Gas Inventories; Institute for Global Environmental Strategies (IGES): Hayama,Japan, 2006; Volume 4, p. 83.
 #' (3) Matthews, G.A.R. (1993) The Carbon Content of Trees. Forestry Commission Technical Paper 4. Forestry Commission, Edinburgh. 21pp. ISBN: 0-85538-317-8
 
-biomass2c <-  function(biomass,method,ci,type,biome){
-  #or add more detail to this
-  if (method == "Matthews"){biomass * 0.5}
-  if (method == "IPCC_s"){biomass * 0.477}
-  if (method == "Thomas 2012"){
-    #lookup
-  }
-  if (method == "IPCC"){
-    #lookup
-  }
-  else
-  {biomass * 0.483}#Thomas 2012 default error = 0.003
+biomass2c <-  function(biomass,method,type,biome){
+  error = NA
+  if (method == "Matthews1"){CVF = 50}
 
+  if (method == "Matthews2"){
+    if(type == "broadleaf"){CVF = 49.9
+    } else if(type == "conifer") {CVF = 49.8}
+  }
+  if (method == "IPCC1"){CVF = 47.7}
+
+  if (method == "IPCC2"){
+    if(biome == "tropical" | biome == "subtropical"){
+      CVF = 47; error = 0.05
+  } else if (biome == "temperate" | biome == "boreal"){
+    if(type == "broadleaf"){CVF = 48; error = 0.04}
+  } else if(type == "conifer") {CVF = 51; error = 0.08}
+  }
+
+  if (method == "Thomas"){
+    if(biome == "tropical"){
+      if(type == "broadleaf"){CVF = 0.471; error = 0.4
+      } else if(type == "conifer") {CVF = 49.3}
+    } else if(biome == "subtropical" | biome == "mediterranean"){
+      if(type == "broadleaf"){CVF = 48.1; error = 0.9}
+      } else if(type == "conifer") {CVF = 50.54; error = 2.8}
+  } else if (biome == "temperate" | biome == "boreal"){
+    if(type == "broadleaf"){CVF = 48.8; error = 0.6}
+  } else if(type == "conifer") {CVF = 50.8; error = 0.6}
+
+  return(c(biomass * CVF, error))
 }
 ##########################################################
 #FC Conifer seedlings and saplings to carbon
