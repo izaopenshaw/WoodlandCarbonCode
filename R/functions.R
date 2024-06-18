@@ -7,19 +7,38 @@
 #' @param spcode species code
 #' @param dbh in centimetres
 #' @param height in metres
-#' @param method of converting biomass to carbon. See biomass2c function
+#' @param biomass2c_method method of converting biomass to carbon. See biomass2c function
+#' @param biome tropical, Subtropical, Mediterranean,Temperate, Boreal or all
 #' @param returnv To return either 'AGC' [default] or 'All'
 #' @returns either Above ground carbon, AGC in tonnes, or a list of tariff number, merchantable volume (metres cubed), stem volume (metres cubed), stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
+AGC <- unlist(fc_agc(spcode, dbh, height, method="IPCC2", biome="temperate", "AGC"))
+AGC <- (fc_agc(spcode, dbh, height, method="IPCC2", biome="temperate", "AG"))
+
+AGC <- fc_agc(spcode=c(spcode,spcode),
+              dbh= c(dbh, dbh+0.1),
+              height= c(height, height+0.1),
+              method="IPCC2", biome="temperate", "AGC")
+
+AGC <- (fc_agc(spcode, dbh, height, method="IPCC2", biome="temperate", "AG"))
+
 
 # VERSION 2
-fc_agb <- function(spcode,dbh,height,method,returnv="AGB"){
+fc_agc <- function(spcode,dbh,height,method="Matthews1",biome,returnv="AGB"){
 
   # Check arguments
+  if(!is.character(spcode))stop("spcode must be a character")
   if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
   if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
-  if(!is.character(spcode))stop("spcode must be a character")
+
+  if (!(method %in% c("Matthews1", "Matthews2", "IPCC1", "IPCC2", "Thomas"))) {
+    stop("Invalid method. Choose from: 'Matthews1', 'Matthews2', 'IPCC1', 'IPCC2', 'Thomas'. See R helpfile.")
+  }
+  if ((method %in% c("IPCC2", "Thomas")) && !missing(biome) && !(biome %in% c("tropical", "subtropical", "mediterranean", "temperate", "boreal"))) {
+    stop("Invalid biome. Choose from: 'tropical', 'subtropical', 'mediterranean', 'temperate', 'boreal'")
+  }
+
 
   # Ensure inputs are of the same length
   if(length(spcode) != length(dbh) || length(spcode) != length(height) || length(dbh) != length(height)) {
@@ -27,7 +46,7 @@ fc_agb <- function(spcode,dbh,height,method,returnv="AGB"){
 
   results <- list()
 
-  for (i in seq_along(spcode)) {
+  for (i in 1:length(spcode)) {
     dbh <- dbh[i]
 
     # Lookup species data from code
@@ -53,7 +72,8 @@ fc_agb <- function(spcode,dbh,height,method,returnv="AGB"){
     stemvol <- fc_treevol(mercvol, dbh)             # Stem volume
     stembiomass <- fc_woodbiomass(stemvol, rec$NSG) # Stem Biomass
     crownbiomass <- fc_crownbiomass(rec$Crown, dbh) # Crown Biomass
-    AGC <- (stembiomass + crownbiomass) * 0.5       # Total above ground carbon *****to change this fraction as an input
+    AGB <- stembiomass + crownbiomass               # Above ground Biomass
+    AGC <- biomass2c(AGB,method=method,type,biome=biome)  # Total above ground Carbon
 
     if (returnv == "AGC") {
       results[[i]] <- AGC
@@ -326,6 +346,8 @@ fc_rootbiomass <- function(spcode,dbh){
 #' @returns carbon dioxide equivalent
 
 c2co2e <- function(carbon){
+  if(!is.numeric(carbon) || carbon<0)stop("carbon must be numeric and positive")
+
   carbon * 44/12
 }
 
@@ -344,44 +366,77 @@ c2co2e <- function(carbon){
   #'   \item{IPCC2}{Lookup CVF by type and biome}
   #'   \item{Thomas1}{Simple with biomass 0.483 and 95% CI of 0.003, can be used for error progression}
   #'   \item{Thomas2}{Lookup by type and biome}
-#' @param type broadleaf or conifer
-#' @param biome tropical, subtropical, mediterranean, temperate or boreal
-#' @return either carbon value or list of carbon value with sd error
+#' @param type broadleaf or conifer. Only required for method = 'Matthews2', 'IPCC2' or 'Thomas'
+#' @param biome tropical, subtropical, mediterranean, temperate or boreal. Only needed for 'IPCC2' and 'Thomas' methods.
+#' @param return either 'carbon' = just carbon value or 'error' = list of carbon value with error. Only associated errors with method = 'IPCC2' and 'Thomas'
+#' @return either carbon value or list of carbon value with error
 #' @references (1) Thomas, Sean C., and Adam R. Martin. "Carbon content of tree tissues: a synthesis." Forests 3.2 (2012): 332-352. https://www.mdpi.com/1999-4907/3/2/332.
 #' (2) IPCC. Forest lands. Intergovernmental Panel on Climate Change Guidelines for National Greenhouse Gas Inventories; Institute for Global Environmental Strategies (IGES): Hayama,Japan, 2006; Volume 4, p. 83.
 #' (3) Matthews, G.A.R. (1993) The Carbon Content of Trees. Forestry Commission Technical Paper 4. Forestry Commission, Edinburgh. 21pp. ISBN: 0-85538-317-8
 
-biomass2c <-  function(biomass,method,type,biome){
-  error = NA
-  if (method == "Matthews1"){CVF = 50}
-
-  if (method == "Matthews2"){
-    if(type == "broadleaf"){CVF = 49.9
-    } else if(type == "conifer") {CVF = 49.8}
+biomass2c <- function(biomass, method, type, biome, return="carbon") {
+  # Check arguments
+  if (!is.numeric(biomass) || biomass < 0) {
+    stop("biomass value must be numeric and positive")
   }
-  if (method == "IPCC1"){CVF = 47.7}
-
-  if (method == "IPCC2"){
-    if(biome == "tropical" | biome == "subtropical"){
-      CVF = 47; error = 0.05
-  } else if (biome == "temperate" | biome == "boreal"){
-    if(type == "broadleaf"){CVF = 48; error = 0.04}
-  } else if(type == "conifer") {CVF = 51; error = 0.08}
+  valid_methods <- c("Matthews1", "Matthews2", "IPCC1", "IPCC2", "Thomas")
+  if (!(method %in% valid_methods)) {
+    stop("Invalid method. Choose from: 'Matthews1', 'Matthews2', 'IPCC1', 'IPCC2', 'Thomas'. See R helpfile.")
+  }
+  valid_types <- c("broadleaf", "conifer")
+  if ((method %in% c("Matthews2", "IPCC2", "Thomas")) && !missing(type) &&
+      !(type %in% valid_types)) {
+    stop("Invalid type. Choose from: 'broadleaf', 'conifer'")
+  }
+  valid_biomes <- c("tropical", "subtropical", "mediterranean", "temperate", "boreal")
+  if ((method %in% c("IPCC2", "Thomas")) && !missing(biome) && !(biome %in% valid_biomes)) {
+    stop("Invalid biome. Choose from: 'tropical', 'subtropical', 'mediterranean', 'temperate', 'boreal'")
   }
 
-  if (method == "Thomas"){
-    if(biome == "tropical"){
-      if(type == "broadleaf"){CVF = 0.471; error = 0.4
-      } else if(type == "conifer") {CVF = 49.3}
-    } else if(biome == "subtropical" | biome == "mediterranean"){
-      if(type == "broadleaf"){CVF = 48.1; error = 0.9}
-      } else if(type == "conifer") {CVF = 50.54; error = 2.8}
-  } else if (biome == "temperate" | biome == "boreal"){
-    if(type == "broadleaf"){CVF = 48.8; error = 0.6}
-  } else if(type == "conifer") {CVF = 50.8; error = 0.6}
+  # Specify carbon volatile fraction based on method
+  if (method == "Matthews1") {       CVF <- 50}
 
-  return(c(biomass * CVF, error))
+  if (method == "Matthews2") {
+    if (type == "broadleaf") {       CVF <- 49.9
+    } else if (type == "conifer") {  CVF <- 49.8
+    }
+  }
+
+  if (method == "IPCC1") {           CVF <- 47.7}
+
+  if (method == "IPCC2") {
+    if (biome == "tropical" || biome == "subtropical") {CVF <- 47 ; error <- 0.05
+    } else if (biome == "temperate" || biome == "boreal") {
+      if (type == "broadleaf") {     CVF <- 48 ; error <- 0.04
+      } else if (type == "conifer") {CVF <- 51 ; error <- 0.08
+      }
+    }
+  }
+
+  if (method == "Thomas") {
+    if (biome == "tropical") {
+      if (type == "broadleaf") {     CVF <- 47.1 ; error <- 0.4
+      } else if (type == "conifer") {CVF <- 49.3
+      }
+    } else if (biome == "subtropical" || biome == "mediterranean") {
+      if (type == "broadleaf") {     CVF <- 48.1 ; error <- 0.9
+      } else if (type == "conifer") {CVF <- 50.54 ; error <- 2.8
+      }
+    } else if (biome == "temperate" || biome == "boreal") {
+      if (type == "broadleaf") {     CVF <- 48.8 ; error <- 0.6
+      } else if (type == "conifer") {CVF <- 50.8 ; error <- 0.6
+      }
+    }
+  }
+  error <- NA # If error isn't specified
+
+  # Return carbon value
+  AGC <- biomass * CVF
+  if(return == "carbon"){return(AGC)
+    } else {return(c(AGC, error))}
 }
+
+
 ##########################################################
 #FC Conifer seedlings and saplings to carbon
 ##########################################################
