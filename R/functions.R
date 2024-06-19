@@ -13,16 +13,7 @@
 #' @returns either Above ground carbon, AGC in tonnes, or a list of tariff number, merchantable volume (metres cubed), stem volume (metres cubed), stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-AGC <- unlist(fc_agc(spcode, dbh, height, method="IPCC2", biome="temperate", "AGC"))
-AGC <- (fc_agc(spcode, DBH, height, method="IPCC2", biome="temperate", "AG"))
-
-AGC <- fc_agc(spcode=c(spcode,spcode),
-              DBH= c(75, 76),
-              height= c(height, height+0.1),
-              method="IPCC2", biome="temperate", "AGC")
-
-# VERSION 2
-fc_agc <- function(spcode,DBH,height,method="Matthews1",biome,returnv="AGB"){
+fc_agc <- function(spcode,DBH,height,method="Matthews1",biome,returnv="AGC"){
 
   # Check arguments
   if(!is.character(spcode))stop("spcode must be a character")
@@ -35,16 +26,20 @@ fc_agc <- function(spcode,DBH,height,method="Matthews1",biome,returnv="AGB"){
   if ((method %in% c("IPCC2", "Thomas")) && !missing(biome) && !(biome %in% c("tropical", "subtropical", "mediterranean", "temperate", "boreal"))) {
     stop("Invalid biome. Choose from: 'tropical', 'subtropical', 'mediterranean', 'temperate', 'boreal'")
   }
-#  if(length(spcode) != length(DBH) || length(spcode) != length(height) || length(DBH) != length(height)) {
-#    stop("spcode, DBH, and height must be of the same length")}
+  n = length(spcode)
+  #if(n != length(DBH) || n != length(height) || length(DBH) != length(height)) {
+  #  stop("spcode, DBH, and height must be of the same length")}
 
-  # Create empty list
-  results <- list()
+  # Create results table
+  r <- data.frame(spcode=NA,DBH=NA,height=NA,tariff=NA,mercvol=NA,stemvol=NA,stembiomass=NA,crownbiomass=NA,rootbiomass=NA,AGC=NA,stringsAsFactors=FALSE)
+  r <- r[1:n,]
 
   # Loop over all species
-  for (i in 1:length(spcode)) {
+  for (i in 1:n) {
     # Lookup species data from code
     rec <- sp_lookupdf[sp_lookupdf$short == spcode[i], ]
+    tarifflokupcode <- rec$single
+    type <- rec$type
 
     # Check if the species code was found
     if (nrow(rec) == 0) {
@@ -52,73 +47,32 @@ fc_agc <- function(spcode,DBH,height,method="Matthews1",biome,returnv="AGB"){
       next
     }
 
-    tarifflokupcode <- rec$single
-    type <- rec$type
-
     # Get tariff number depending on broadleaf or conifer
     if (type == "broadleaf") {
-      tariff <- fc_broad_tariff(tarifflokupcode, height[i], DBH[i])
+      r$tariff[i] <- fc_broad_tariff(tarifflokupcode, height[i], DBH[i])
     } else if (type == "conifer") {
-      tariff <- fc_con_tariff(tarifflokupcode, height[i], DBH[i])
+      r$tariff[i] <- fc_con_tariff(tarifflokupcode, height[i], DBH[i])
     }
 
-    mercvol <- fc_merchtreevol(tariff, DBH[i])         # Merchantable tree volume
-    stemvol <- fc_treevol(mercvol, DBH[i])             # Stem volume
-    stembiomass <- fc_woodbiomass(stemvol, rec$NSG)    # Stem Biomass
-    crownbiomass <- fc_crownbiomass(rec$Crown, DBH[i]) # Crown Biomass
-    AGB <- stembiomass + crownbiomass                  # Above ground Biomass
-    AGC <- biomass2c(AGB,method=method,type,biome=biome)  # Total above ground Carbon
+    # Calculate volumes and biomass
+    r$mercvol[i] <- fc_merchtreevol(r$tariff[i], DBH[i])      # Merchantable tree volume
+    r$stemvol[i] <- fc_treevol(r$mercvol[i], DBH[i])          # Stem volume
+    r$stembiomass[i] <- fc_woodbiomass(r$stemvol[i], rec$NSG) # Stem Biomass
+    r$crownbiomass[i] <- fc_crownbiomass(rec$Crown, DBH[i])   # Crown Biomass
+    AGB <- r$stembiomass[i] + r$crownbiomass[i]               # Above ground Biomass
+    r$AGC[i] <- biomass2c(AGB,method=method,type,biome=biome) # Above ground Carbon
 
-    if (returnv == "AGC") {
-      results[[i]] <- AGC
-    } else {
-      rootbiomass <- fc_rootbiomass(rec$Root, DBH[i]) # Root Biomass
-      results[[i]] <- list(sp_code = spcode, tariff = tariff, merc_vol = mercvol,
-                           stem_vol = stemvol, stem_biomass = stembiomass,
-                           crown_biomass = crownbiomass, root_biomass = rootbiomass, AGC = AGC)
-      }
+    if(returnv != "AGC"){
+      r$rootbiomass <- fc_rootbiomass(rec$Root, DBH[i])       # Root Biomass
+      r$spcode[i] <- spcode[i]
+      r$DBH[i]    <- DBH[i]
+      r$height[i] <- height[i]
+    }
   }
-  return(results)
-}
-
-# VERSION 1
-fc_agc <- function(spcode,dbh,height,returnv="AGC"){
-
-  # Check arguments
-  if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
-  if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
-  if (!is.character(spcode))stop("spcode must be a character")
-
-  # Lookup species data from code
-  rec <- sp_lookupdf[sp_lookupdf$short %in% spcode, ]
-
-  # Check if all species code values were found
-  not_found <- setdiff(spcode, rec$short)
-  if (length(not_found) > 0) {warning("The following spcode values were not found: ", paste(not_found, collapse = ", "))}
-
-  tarifflokupcode <- rec$single
-  type <- rec$type
-
-  # Get tariff number depending on broadleaf or conifer
-  if (type == 'broadleaf'){
-    tariff <- fc_broad_tariff(tarifflokupcode, height, dbh)
-  } else if (type == "conifer") {
-    tariff <- fc_con_tariff(tarifflokupcode, height, dbh)
-  }
-
-  mercvol <- fc_merchtreevol(tariff, dbh)          # Merchantable tree volume
-  stemvol <- fc_treevol(mercvol, dbh)             # Stem volume
-  stembiomass <- fc_woodbiomass(stemvol, rec$NSG) # Stem Biomass
-  crownbiomass <- fc_crownbiomass(rec$Crown, dbh)  # Crown Biomass
-  AGC <- (stembiomass + crownbiomass) * 0.5        # Total above ground carbon
-
-  if(returnv == "AGC"){
-    return(AGC)
+  if (returnv == "AGC") {
+    return(r$AGC)
   } else {
-    rootbiomass <- fc_rootbiomass(rec$Root, dbh)   # Root Biomass
-    return(list(sp_code = spcode, tariff = tariff, merc_vol = mercvol,
-                stem_vol = stemvol, stem_biomass = stembiomass,
-                crown_biomass = crownbiomass, root_biomass = rootbiomass, AGC = AGC))
+    return(r)
   }
 }
 
@@ -200,7 +154,7 @@ fc_broad_tariff <- function(spcode, height, dbh) {
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
 fc_stand_tariff <- function(spcode, height) {
-  if(!is.numeric(spcode) || any(spcode<0))stop("spcode must be numeric and positive")
+  if(!is.character(spcode))stop("spcode must be a character")
   if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
 
   rec <- tarif2heightdf[tarif2heightdf$abbreviation == spcode, ]
