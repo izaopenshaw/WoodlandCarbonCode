@@ -88,7 +88,7 @@ fc_agc <- function(spcode,DBH,height,method="Matthews1",biome,returnv="AGC"){
 #' @returns  Tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). (Equation 1)
 #'
-fc_tariff_vol_area <- function(vol, dbh){
+tariff_vol_area <- function(vol, dbh){
   if (!is.numeric(vol) || any(vol < 0) || !is.numeric(dbh) || any(dbh < 0)) {
     stop("vol and dbh must be non-negative numeric values")
   }
@@ -109,7 +109,7 @@ fc_tariff_vol_area <- function(vol, dbh){
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_con_tariff <- function(spcode, height, dbh) {
+conifer_tariff <- function(spcode, height, dbh) {
   if (!is.numeric(height) || !is.numeric(dbh) || height < 0 || dbh < 0) {
     stop("height and dbh must be non-negative numeric values")
   }
@@ -133,7 +133,7 @@ fc_con_tariff <- function(spcode, height, dbh) {
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Method B, Equation 2.
 #'
-fc_broad_tariff <- function(spcode, height, dbh) {
+broadleaf_tariff <- function(spcode, height, dbh) {
   if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
   if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
 
@@ -153,7 +153,7 @@ fc_broad_tariff <- function(spcode, height, dbh) {
 #' @returns  tariff number
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_stand_tariff <- function(spcode, height) {
+stand_tariff <- function(spcode, height) {
   if(!is.character(spcode))stop("spcode must be a character")
   if(!is.numeric(height) || any(height<0))stop("height must be numeric and positive")
 
@@ -176,7 +176,7 @@ fc_stand_tariff <- function(spcode, height) {
 #' @returns  volume metres cubed
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_merchtreevol <- function(tariff, dbh) {
+merchtreevol <- function(tariff, dbh) {
   if(is.na(tariff)||!is.numeric(tariff)||any(tariff<0))stop("tariff must be numeric and positive")
   if(is.na(dbh)   ||!is.numeric(dbh)   ||any(dbh<0))stop("dbh must be numeric and positive")
 
@@ -201,7 +201,7 @@ fc_merchtreevol <- function(tariff, dbh) {
 #' @returns  volume metres cubed
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_treevol <- function(mtreevol, dbh) {
+treevol <- function(mtreevol, dbh) {
 
   if(!is.numeric(dbh) || any(dbh<0))stop("dbh must be numeric and positive")
   if(!is.numeric(mtreevol) || any(mtreevol<0))stop("mtreevol must be numeric and positive")
@@ -227,7 +227,7 @@ fc_treevol <- function(mtreevol, dbh) {
 #' @returns  biomass in oven dry tonnes
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
-fc_woodbiomass <- function(treevol, nsg) {
+woodbiomass <- function(treevol, nsg) {
 
   if(!is.numeric(treevol) || any(treevol<0))stop("treevol must be numeric and positive")
   if(!is.numeric(nsg) || any(nsg<0))stop("nsg must be numeric and positive")
@@ -246,7 +246,7 @@ fc_woodbiomass <- function(treevol, nsg) {
 #' @returns  biomass (oven dry tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Section 5.2.2.
 #'
-fc_crownbiomass <- function(spcode, dbh) {
+crownbiomass <- function(spcode, dbh) {
   if(!is.numeric(dbh) || dbh < 0)stop("Argument 'dbh' must be numeric and non-negative")
   if(dbh < 7){warning("equation is only specifed for dbh equal to or greater than 7")}
 
@@ -272,7 +272,7 @@ fc_crownbiomass <- function(spcode, dbh) {
 #' @returns biomass (oven dry tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018). Section 5.2.3.
 
-fc_rootbiomass <- function(spcode,dbh){
+rootbiomass <- function(spcode,dbh){
   if(!is.numeric(dbh) || dbh < 0)stop("Argument 'dbh' must be numeric and non-negative")
 
   rec <- root_biomassdf[root_biomassdf$Code == spcode,]
@@ -396,7 +396,7 @@ biomass2c <- function(biomass, method, type, biome, return="carbon") {
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
 #'
 
-fc_con_sap_seedling2C <- function(heightincm){
+con_sap_seedling2C <- function(heightincm){
   b <- tail(seedlings_conifer[seedlings_conifer$height.cm <= heightincm,],1)
   t <- head(seedlings_conifer[seedlings_conifer$height.cm >= heightincm,],1)
   rt <- (t$height.cm - heightincm)/(t$height.cm-b$height.cm)
@@ -421,7 +421,7 @@ fc_con_sap_seedling2C <- function(heightincm){
 #'
 #'
 #
-fc_broad_sap_seedling2C <- function(heightincm){
+broad_sap_seedling2C <- function(heightincm){
   #get first and last
   #note max is 1000
   #min is 1 cm
@@ -443,7 +443,7 @@ fc_broad_sap_seedling2C <- function(heightincm){
 # Progression of errors from volume, density, biomassc = carbon
 ##########################################################
 #' @title Carbon progression of errors
-#' @description todo*
+#' @description Progression of errors through monte carlo simulation
 #' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param volsd volume sd
 #' @param densd wood density sd
@@ -451,7 +451,7 @@ fc_broad_sap_seedling2C <- function(heightincm){
 #' @param nruns number of iteration, suggest 10,000 as min and 100,000 is a good number
 #' @param returnv if null then mean and sd is returned else vector of quantiles ie c(5,50,95)/100 will return 5%, mean and 95% quantiles.
 #' @returns  either vector of mean and sd or vector of quantiles
-#' @references todo*
+#' @references
 #'
 #vol <- 100
 #volsd <- 10
