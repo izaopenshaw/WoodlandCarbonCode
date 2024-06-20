@@ -82,7 +82,7 @@ fc_agc <- function(spcode,DBH,height,method="Matthews1",biome,returnv="AGC"){
 ##########################################################
 #' @title Tariff number from volume and basal area
 #' @description Using the sample tree’s basal area and volume to calculate the tariff number. Basal area is calculated by ba = (pi * dbh^2)/40000.
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param vol tree volume in metres cubed
 #' @param dbh diameter at breast height in centimetres
 #' @returns  Tariff number
@@ -103,7 +103,7 @@ fc_tariff_vol_area <- function(vol, dbh){
 ##########################################################
 #' @title Conifer tree tariff number
 #' @description Use DBH and tree height to calculate the tariff number of each sample tree. Species-specific estimates of a1 – a3 are found in the R data file, 'tariff_coniferdf'.
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param height tree height in metres
 #' @param dbh diameter at breast height in centimetres
 #' @returns  tariff number
@@ -126,7 +126,7 @@ fc_con_tariff <- function(spcode, height, dbh) {
 ##########################################################
 #' @title Carbon tariff number for broadleaf tree
 #' @description Use DBH and tree height to derive the tariff number of each sample tree. Species-specific estimates of a1 – a4 are found in the R data file, 'tariff_broaddf'.
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param height tree height in meters
 #' @param dbh diameter at breast height in centimetres
 #' @param spcode species code
@@ -147,7 +147,7 @@ fc_broad_tariff <- function(spcode, height, dbh) {
 ##########################################################
 #' @title Tariff number by stand height
 #' @description Use the estimated stand top height to calculate the stand tariff number.
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param height tree height in metres
 #' @param spcode species code
 #' @returns  tariff number
@@ -170,7 +170,7 @@ fc_stand_tariff <- function(spcode, height) {
 ##########################################################
 #' @title Forestry merchantable volume
 #' @description Use the tree tariff number and DBH to estimate the mean merchantable tree volume.
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param tariff tree or stand tariff number
 #' @param dbh diameter at breast height in centimetres
 #' @returns  volume metres cubed
@@ -195,7 +195,7 @@ fc_merchtreevol <- function(tariff, dbh) {
 ##########################################################
 #' @title Forestry commission tree wood volume
 #' @description Calculate the stem volume by multiplying the merchantable tree volume by the appropriate species multiplication factor from stemvol.rda
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param mtreevol merchantable tree volume
 #' @param dbh diameter at breast height in centimeters (greater than 6.5 cm)
 #' @returns  volume metres cubed
@@ -221,7 +221,7 @@ fc_treevol <- function(mtreevol, dbh) {
 ##########################################################
 #' @title Forestry commission wood biomass
 #' @description Multiply the mean total tree volume by the nominal specific gravity to give the biomass, in oven dry tonnes.
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param treevol tree volume in metres cubed
 #' @param nsg Nominal Specific Gravity
 #' @returns  biomass in oven dry tonnes
@@ -240,7 +240,7 @@ fc_woodbiomass <- function(treevol, nsg) {
 ##########################################################
 #' @title Forestry commission crown biomass estimates
 #' @description  Function to find crown biomass (composed of branches, stem tips and foliage) depending on species and DBH
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param dbh diameter at breast height in centimetres
 #' @param spcode Crown biomass species code, crown_biomasdf$Code which relates to sp_lookupdf$Crown
 #' @returns  biomass (oven dry tonnes)
@@ -266,7 +266,7 @@ fc_crownbiomass <- function(spcode, dbh) {
 ##########################################################
 #' @title Forestry commission root biomass estimates
 #' @description Function to calculate the root biomass depending on species and DBH
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param dbh diameter at breast height (1.3 m) in centimetres
 #' @param spcode species code
 #' @returns biomass (oven dry tonnes)
@@ -289,7 +289,7 @@ fc_rootbiomass <- function(spcode,dbh){
 ##########################################################
 #' @title Carbon to CO2 equivalent
 #' @description Function to convert from carbon to carbon dioxide equivalent
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param carbon carbon
 #' @returns carbon dioxide equivalent
 
@@ -390,7 +390,7 @@ biomass2c <- function(biomass, method, type, biome, return="carbon") {
 ##########################################################
 #' @title Conifer seedlings and saplings to carbon
 #' @description todo*
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param heightincm tree height in metres
 #' @returns  carbon in tonnes
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018)
@@ -413,7 +413,7 @@ fc_con_sap_seedling2C <- function(heightincm){
 ##########################################################
 #' @title Broadleaf seedlings and saplings to carbon
 #' @description todo*
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param height = tree height in metres
 #' @returns  carbon in tonnes
 #' @note just uses simple linear relationship to get between measures
@@ -444,7 +444,7 @@ fc_broad_sap_seedling2C <- function(heightincm){
 ##########################################################
 #' @title Carbon progression of errors
 #' @description todo*
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param volsd volume sd
 #' @param densd wood density sd
 #' @param biomsd biomass sd
@@ -482,7 +482,7 @@ pro_error_carbon <- function(vol,volsd,den,densd,biom,biomsd,nruns=10000, return
 ##########################################################
 #' @title Volume progression of errors
 #' @description todo*
-#' @author Justin Moat. J.Moat@kew.org
+#' @author Justin Moat. J.Moat@kew.org, Isabel Openshaw. I.Openshaw@kew.org
 #' @param dbh diameter at breast height (dbh) in cm
 #' @param dbhsd dbh sd
 #' @param height tree height in meters
