@@ -1,57 +1,78 @@
-devtools::install_github("izaopenshaw/WoodlandCarbonCode")
-devtools::install_github("izaopenshaw/WoodlandCarbonCode", force = TRUE)
+#==========Initialise===========
+# Install package
+devtools::install_github("izaopenshaw/WoodlandCarbonCode", force = TRUE) # force = TRUE to install updates
 
+# Load package
 library(WoodlandCarbonCode)
 
-# --------- Get Tariff Number ---------
 # Example tree metrics
 dbh    <- 74 # cm
 height <- 24 # m
 vol <- 50    # m^3
 
-# Method A: felled tree
-fc_tariff_vol_area(vol, dbh)
+#==========Tariff Number===========
+#==Method A: felled tree
+ tariff_vol_area(vol, dbh)
 
-# Method B: broadleaf
+#==Method B: broadleaf
 # Lookup species code in data(sp_lookupdf)
 rec <- sp_lookupdf[sp_lookupdf$General.for.genus=="Quercus",] # either by general genus
 rec <- sp_lookupdf[sp_lookupdf$common_name=="oak",] # or by common name
 spcode <- rec$single
-tariff <- fc_broad_tariff(spcode, height, dbh)
+tariff <-  broad_tariff(spcode, height, dbh)
 tariff
 
-# Method C: conifer
+#==Method C: conifer
 rec_c <- sp_lookupdf[sp_lookupdf$General.for.classification=="coniferous",]
 spcode_c <- rec_c$single
-fc_con_tariff(spcode_c, height, dbh)
+ con_tariff(spcode_c, height, dbh)
 
-# Method D: dense and dark stands
-fc_stand_tariff(spcode, height)
+#==Method D: dense and dark stands
+ stand_tariff(spcode, height)
 
-# --------- Get tree volumes ---------
-# Merchantable tree volume
-mercvol <- fc_merchtreevol(tariff, dbh)
+#===========Volume===========
+#==Merchantable tree volume
+mercvol <-  merchtreevol(tariff, dbh)
+mercvol
+#==Stem volume
+stemvol <-  treevol(mercvol, dbh)
+stemvol
+#==Stem Biomass
+stembiomass <-  woodbiomass(stemvol, rec$NSG)
+stembiomass
+#==Crown Biomass
+crownbiomass <-  crownbiomass(rec$Crown, dbh)
+crownbiomass
+#==Total above ground carbon
+biomass <- (stembiomass + crownbiomass)*0.5
+biomass <-   agc(spcode, dbh, height, method="IPCC1", biome="temperate", "AGC")
+biomass
 
-# Stem volume
-stemvol <- fc_treevol(mercvol, dbh)
+AGC <-  fc_agc(spcode, dbh, height, method="IPCC2", biome="temperate", "AGC")
+fc_agc(spcode, dbh, height, method="IPCC2", biome="temperate", "Al")
 
-# Stem Biomass
-stembiomass <- fc_woodbiomass(stemvol, rec$NSG)
+AGC <- fc_agc(spcode=c(spcode,spcode),
+              DBH= c(75, 76),
+              height= c(height, height+0.1),
+              method="IPCC2", biome="temperate", "AGC")
+all <- fc_agc(spcode=c(spcode,spcode),
+              DBH= c(75, 76),
+              height= c(23, 25),
+              method="IPCC2", biome="temperate", "ALL")
 
-# Crown Biomass
-crownbiomass <- fc_crownbiomass(rec$Crown, dbh)
-
-# Total above ground carbon
-(stembiomass + crownbiomass) * 0.5
-fc_agc(spcode, dbh, height, "AGC")
 
 # Root Biomass
-rootbiomass <- fc_rootbiomass(rec$Root, dbh)
+rootbiomass <-  rootbiomass(rec$Root, dbh)
 
+ broad_sap_seedling2C(100)
+ con_sap_seedling2C(100)
 
-fc_broad_sap_seedling2C(100)
-fc_con_sap_seedling2C(100)
-
+# biomass2c
+biomass2c(biomass,method="Matthews1")
+biomass2c(biomass,method="Matthews2",type="broadleaf")
+biomass2c(biomass,method="IPCC1")
+biomass2c(biomass,method="IPCC2",type="broadleaf",biome="temperate", return="error")
+biomass2c(biomass,method="Thomas",type="broadleaf",biome="temperate", return="error")
 
 #multiple
 #note should work with vectors, but not at the moment
@@ -124,11 +145,11 @@ spcode=r$code
 dbh=r$DBH
 height=r$Height
 
-tariff <- fc_broad_tariff(tarifflokupcode,h,d)
-mercvol <- fc_merchtreevol(tariff,dbh)
-stemvol1 <- fc_treevol(mercvol,dbh)
-stembiomass <- fc_woodbiomass(stemvol1,rec$NSG)
-crownbiomass <- fc_crownbiomass(rec$Crown,dbh)
+tariff <-  broad_tariff(tarifflokupcode,h,d)
+mercvol <-  merchtreevol(tariff,dbh)
+stemvol1 <-  treevol(mercvol,dbh)
+stembiomass <-  woodbiomass(stemvol1,rec$NSG)
+crownbiomass <-  crownbiomass(rec$Crown,dbh)
 AGC <- (stembiomass + crownbiomass) * 0.5
 
 tariff
