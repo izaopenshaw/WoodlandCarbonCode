@@ -475,7 +475,6 @@ pro_error_carbon <- function(vol,volsd,den,densd,biom,biomsd,nruns=10000, return
   }
 }
 
-
 #AGB = 0.0673 * (WD * H * D^2)^0.976
 ##########################################################
 #progression of errors from height and dbh to volume

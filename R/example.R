@@ -1,6 +1,13 @@
 #==========Initialise===========
+remove.packages("WoodlandCarbonCode")
+detach("package:WoodlandCarbonCode", unload = TRUE)
+unlink("C:/Users/ipr10kg/AppData/Local/R/win-library/4.3/00LOCK-WoodlandCarbonCode", recursive = TRUE)
+
+temp_files <- list.files(tempdir(), full.names = TRUE)
+file.remove(temp_files)
+
 # Install package
-devtools::install_github("izaopenshaw/WoodlandCarbonCode", force = TRUE) # force = TRUE to install updates
+devtools::install_github("izaopenshaw/WoodlandCarbonCode", force = TRUE) # force = TRUE to install updates.
 
 # Load package
 library(WoodlandCarbonCode)
