@@ -9,7 +9,7 @@
 #' @param height in metres
 #' @param biomass2c_method method of converting biomass to carbon. See biomass2c function
 #' @param biome tropical, Subtropical, Mediterranean,Temperate, Boreal or all
-#' @param returnv To return either 'AGC' [default] or 'All'
+#' @param returnv To return either 'AGC' [default] or 'all'
 #' @returns either Above ground carbon, AGC in tonnes, or a list of tariff number, merchantable volume (metres cubed), stem volume (metres cubed), stem biomass (tonnes), stem carbon (tonnes), canopy carbon (tonnes) and root carbon (tonnes)
 #' @references Jenkins, Thomas AR, et al. "FC Woodland Carbon Code: Carbon Assessment Protocol (v2. 0)." (2018).
 #'
